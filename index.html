@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>타목시펜 병용 주의 대장 · 상호작용 대시보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F1E8;
+    --paper-2:#ECE7D9;
+    --ink:#22281F;
+    --ink-soft:#4B5245;
+    --seal-green:#2F5C4B;
+    --seal-green-dim:#3F6E5A;
+    --rule:#C9C0A8;
+    --contra:#9C2B2B;
+    --contra-bg:#F4E0DE;
+    --caution:#B36A17;
+    --caution-bg:#F3E5CC;
+    --minor:#33628A;
+    --minor-bg:#DEE7EF;
+    --none:#6E6A5E;
+    --none-bg:#E7E3D6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--seal-green); color:var(--paper); }
+
+  /* ---------- Header ---------- */
+  header{
+    position:relative;
+    padding:56px 24px 40px;
+    max-width:1080px;
+    margin:0 auto;
+    border-bottom:1px solid var(--rule);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--seal-green);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:8px;height:8px;border-radius:50%;
+    background:var(--seal-green);
+    display:inline-block;
+  }
+  h1{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:clamp(28px, 4.4vw, 44px);
+    margin:0 0 12px;
+    letter-spacing:-0.01em;
+  }
+  header p.lead{
+    max-width:640px;
+    color:var(--ink-soft);
+    font-size:15.5px;
+    margin:0 0 28px;
+  }
+  .stamp{
+    position:absolute;
+    top:48px; right:24px;
+    width:104px; height:104px;
+    border:2px solid var(--seal-green);
+    border-radius:50%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transform:rotate(-8deg);
+    font-family:'Noto Serif KR', serif;
+    color:var(--seal-green);
+    opacity:.9;
+  }
+  .stamp .n{ font-size:28px; font-weight:700; line-height:1; }
+  .stamp .t{ font-size:10px; letter-spacing:.08em; margin-top:2px; }
+  @media (max-width:700px){ .stamp{ display:none; } }
+
+  /* ---------- Controls ---------- */
+  .controls{
+    max-width:1080px;
+    margin:0 auto;
+    padding:28px 24px 8px;
+  }
+  .search-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .search-row input{
+    flex:1;
+    background:#fff;
+    border:1px solid var(--rule);
+    border-radius:2px;
+    padding:12px 14px;
+    font-family:'Noto Sans KR', sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  .search-row input:focus{
+    outline:none;
+    border-color:var(--seal-green);
+    box-shadow:0 0 0 3px rgba(47,92,75,0.12);
+  }
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:22px;
+  }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:7px 12px;
+    border-radius:20px;
+    border:1px solid transparent;
+    cursor:pointer;
+    user-select:none;
+    display:flex; align-items:center; gap:6px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .chip:hover{ transform:translateY(-1px); }
+  .chip.active{ box-shadow:inset 0 0 0 1.5px currentColor; }
+  .chip .dot{ width:8px;height:8px;border-radius:50%; background:currentColor; }
+  .chip.contra{ background:var(--contra-bg); color:var(--contra); }
+  .chip.caution{ background:var(--caution-bg); color:var(--caution); }
+  .chip.minor{ background:var(--minor-bg); color:var(--minor); }
+  .chip.none{ background:var(--none-bg); color:var(--none); }
+  .chip.reset{ background:transparent; color:var(--ink-soft); border-color:var(--rule); }
+
+  /* ---------- Category nav ---------- */
+  .catnav{
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 24px 32px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .catnav button{
+    font-family:'Noto Sans KR', sans-serif;
+    font-size:13px;
+    background:var(--paper-2);
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+    padding:8px 14px;
+    border-radius:2px;
+    cursor:pointer;
+  }
+  .catnav button.active{
+    background:var(--seal-green);
+    border-color:var(--seal-green);
+    color:var(--paper);
+  }
+
+  /* ---------- Sections ---------- */
+  main{ max-width:1080px; margin:0 auto; padding:0 24px 80px; }
+  section.category{ margin-bottom:44px; }
+  .cat-head{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:10px;
+    margin-bottom:18px;
+  }
+  .cat-num{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--seal-green);
+    font-size:13px;
+  }
+  .cat-head h2{
+    font-family:'Noto Serif KR', serif;
+    font-size:21px;
+    margin:0;
+    font-weight:600;
+  }
+  .cat-desc{ font-size:13px; color:var(--ink-soft); margin:-8px 0 18px; }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:14px;
+  }
+  .card{
+    background:#fff;
+    border:1px solid var(--rule);
+    border-left:5px solid var(--none);
+    border-radius:2px;
+    padding:16px 18px 14px;
+    position:relative;
+    transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .card:hover{ box-shadow:0 6px 18px rgba(34,40,31,0.08); transform:translateY(-2px); }
+  .card.contra{ border-left-color:var(--contra); }
+  .card.caution{ border-left-color:var(--caution); }
+  .card.minor{ border-left-color:var(--minor); }
+  .card.none{ border-left-color:var(--none); }
+
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .card-name{
+    font-weight:600;
+    font-size:15.5px;
+  }
+  .card-alias{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    display:block;
+    margin-top:2px;
+    font-weight:400;
+  }
+  .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.03em;
+    padding:3px 8px;
+    border-radius:12px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .badge.contra{ background:var(--contra-bg); color:var(--contra); }
+  .badge.caution{ background:var(--caution-bg); color:var(--caution); }
+  .badge.minor{ background:var(--minor-bg); color:var(--minor); }
+  .badge.none{ background:var(--none-bg); color:var(--none); }
+
+  .ing-row{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+  .ing-chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    background:var(--paper-2);
+    color:var(--ink-soft);
+    border:1px solid var(--rule);
+    padding:2px 7px;
+    border-radius:3px;
+  }
+  .card-body{ font-size:13.3px; color:var(--ink); margin-bottom:10px; }
+  .card-source{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    border-top:1px dashed var(--rule);
+    padding-top:8px;
+    margin-top:auto;
+  }
+
+  .hidden{ display:none !important; }
+  .empty-msg{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+    padding:40px 0;
+  }
+
+  footer{
+    max-width:1080px;
+    margin:0 auto;
+    padding:28px 24px 60px;
+    border-top:1px solid var(--rule);
+  }
+  footer .warn{
+    font-size:13px;
+    color:var(--ink-soft);
+    background:var(--paper-2);
+    border-left:3px solid var(--seal-green);
+    padding:14px 16px;
+  }
+  footer .warn b{ color:var(--ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Tamoxifen Interaction Reference</div>
+  <h1>타목시펜 병용 주의 대장</h1>
+  <p class="lead">국내 약국·편의점에서 처방전 없이 살 수 있는 실제 브랜드명 중심으로, 타목시펜 약효를 떨어뜨리거나 부작용 위험을 키우는 제품을 정리했습니다. 카드마다 포함 성분까지 함께 표기했습니다.</p>
+  <div class="stamp"><span class="n">41</span><span class="t">브랜드 수록</span></div>
+</header>
+
+<div class="controls">
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="브랜드명 또는 성분명으로 검색 · 예) 판콜, 이지퀼나잇액, 와파린, 이부프로펜">
+  </div>
+  <div class="legend">
+    <div class="chip contra" data-sev="contra"><span class="dot"></span>금기 / 심각</div>
+    <div class="chip caution" data-sev="caution"><span class="dot"></span>주의 필요</div>
+    <div class="chip minor" data-sev="minor"><span class="dot"></span>경미 · 참고</div>
+    <div class="chip none" data-sev="none"><span class="dot"></span>보고된 상호작용 없음</div>
+    <div class="chip reset" id="resetChip">필터 초기화</div>
+  </div>
+</div>
+
+<div class="catnav" id="catNav"></div>
+
+<main id="main"></main>
+
+<footer>
+  <div class="warn">
+    <b>참고 안내</b> — 본 자료는 FDA 승인 라벨, Drugs.com 전문가용 상호작용 데이터베이스, Journal of Clinical Oncology, PubMed/PMC 논문 등 공신력 있는 출처를 정리한 참고 자료이며, 실제 복용 중인 약을 조정하기 전에는 반드시 처방 의사·약사와 상의하시기 바랍니다. 최종 업데이트: 2026년 7월.
+  </div>
+</footer>
+
+<script>
+const DATA = [
+  {cat:"종합감기약", items:[
+    {name:"판콜에스 · 판콜Q", alias:"동화약품 · 약국 판매 일반의약품", ing:["아세트아미노펜","카페인무수물","클로르페니라민말레산염","메틸에페드린염산염","구아이페네신"], sev:"caution", note:"클로르페니라민(항히스타민)이 포함되어 있어 이론적으로 CYP2D6 관련 주의가 필요. 디펜히드라민만큼 강한 억제력은 아님.", src:"동화약품 제품정보 / 임상 참고자료 종합"},
+    {name:"판콜에이", alias:"동화약품 · 편의점 안전상비의약품", ing:["아세트아미노펜","카페인무수물","클로르페니라민말레산염","페닐에프린"], sev:"caution", note:"항히스타민(클로르페니라민) 포함 제품으로 동일한 이유로 주의가 권고됨.", src:"동화약품 제품정보"},
+    {name:"판피린큐 액", alias:"동아제약 · 약국 판매 일반의약품", ing:["아세트아미노펜","클로르페니라민말레산염","dl-메틸에페드린염산염","카페인무수물","구아이페네신","티페피딘시트르산염"], sev:"caution", note:"항히스타민(클로르페니라민) 포함. 성분표 확인된 실제 함량 기준.", src:"동아제약(dpharm) 제품정보 / health.kr"},
+    {name:"판피린티", alias:"동아제약 · 편의점 안전상비의약품", ing:["아세트아미노펜","클로르페니라민말레산염","카페인무수물"], sev:"caution", note:"항히스타민 포함 제품.", src:"동아제약 제품정보"},
+    {name:"판피린 나이트액", alias:"동아제약 · 야간용 감기약", ing:["아세트아미노펜","슈도에페드린","dl-메틸에페드린","구아이페네신","클로르페니라민말레산염"], sev:"caution", note:"항히스타민 성분 포함된 야간용 제품.", src:"동아제약 제품정보"},
+    {name:"타이레놀콜드에스", alias:"한국얀센 · 종합감기약", ing:["아세트아미노펜","항히스타민 성분(제품별 상이)"], sev:"caution", note:"제품 라인업에 따라 항히스타민 포함 여부가 다르므로 실제 구매 시 성분표 확인 필요.", src:"제품 라벨 일반 정보"},
+    {name:"테라플루", alias:"GSK · 건조시럽형 종합감기약", ing:["아세트아미노펜","페닐에프린","클로르페니라민 계열"], sev:"caution", note:"항히스타민 포함 종합감기약으로 분류.", src:"제품 라벨 일반 정보"}
+  ]},
+  {cat:"해열진통제 · 두통약 · 생리통약", items:[
+    {name:"타이레놀", alias:"한국얀센 · 아세트아미노펜 단일제", ing:["아세트아미노펜"], sev:"none", note:"단독 성분 기준 유의한 상호작용 보고 없음.", src:"FDA 라벨 / Drugs.com"},
+    {name:"이지엔6에이스", alias:"대웅제약 · 아세트아미노펜 단일제", ing:["아세트아미노펜"], sev:"none", note:"이지엔6 라인 중 유일하게 아세트아미노펜 단일 성분.", src:"제품 라벨 일반 정보"},
+    {name:"이지엔6 (에이스 제외 전 라인업)", alias:"대웅제약 · 이부프로펜/덱시부프로펜 계열", ing:["이부프로펜 또는 덱시부프로펜"], sev:"caution", note:"NSAID 계열로 혈소판 응집을 억제해 출혈 경향을 높일 수 있음. 혈전 위험이 있는 타목시펜 복용자는 임상적 주의 필요.", src:"Drugs.com 상호작용 리포트"},
+    {name:"탁센 · 탁센이브", alias:"녹십자 · NSAID 계열", ing:["나프록센 또는 이부프로펜"], sev:"caution", note:"NSAID 공통 사유로 출혈 경향 주의.", src:"Drugs.com 상호작용 리포트"},
+    {name:"게보린", alias:"삼진제약", ing:["이소프로필안티피린","아세트아미노펜","무수카페인"], sev:"none", note:"현재까지 공신력 있는 자료에서 특별한 타목시펜 상호작용 보고 확인되지 않음.", src:"제품 라벨 일반 정보"},
+    {name:"펜잘큐", alias:"종근당", ing:["아세트아미노펜","에텐자미드","카페인"], sev:"none", note:"유의미한 상호작용 보고 없음.", src:"제품 라벨 일반 정보"},
+    {name:"사리돈에이", alias:"바이엘", ing:["프로피페나존","파라세타몰","카페인"], sev:"none", note:"관련 자료가 제한적이나 현재까지 보고된 상호작용 없음.", src:"제품 라벨 일반 정보"},
+    {name:"아스피린프로텍트 · 바이엘아스피린", alias:"바이엘 · 아스피린 단일제", ing:["아스피린"], sev:"caution", note:"항혈소판 작용으로 출혈 위험 상승 가능. 항응고제(와파린 등) 병용자는 특히 주의.", src:"Drugs.com 상호작용 리포트"}
+  ]},
+  {cat:"소화제 · 제산제", items:[
+    {name:"훼스탈 · 훼스탈플러스 · 훼스탈골드", alias:"한독", ing:["판크레아틴","우르소데옥시콜산(UDCA)","셀룰라아제","시메티콘"], sev:"none", note:"소화효소 위주 성분으로 타목시펜과의 유의미한 상호작용 보고 없음.", src:"한독 제품정보"},
+    {name:"베아제 · 닥터베아제", alias:"대웅제약", ing:["복합소화효소","UDCA","시메티콘"], sev:"none", note:"보고된 상호작용 없음.", src:"제품 라벨 일반 정보"},
+    {name:"까스활명수 · 부채표 활명수", alias:"동화약품", ing:["생약 복합제"], sev:"none", note:"보고된 상호작용 없음.", src:"동화약품 제품정보"},
+    {name:"겔포스엠", alias:"보령 · 제산제", ing:["인산알루미늄겔 등"], sev:"none", note:"보고된 상호작용 없음.", src:"제품 라벨 일반 정보"},
+    {name:"개비스콘", alias:"제산·역류 완화제", ing:["알긴산나트륨","제산제 성분"], sev:"none", note:"보고된 상호작용 없음.", src:"제품 라벨 일반 정보"}
+  ]},
+  {cat:"지사제", items:[
+    {name:"스멕타", alias:"한국보령·이팜 등 · 흡착형 지사제", ing:["디옥타헤드랄스멕타이트"], sev:"none", note:"체내 흡수되지 않는 흡착제로 전신 상호작용 보고 없음.", src:"제품 라벨 일반 정보"},
+    {name:"로페라마이드 함유 일반의약품 (로페린 등)", alias:"로페라마이드염산염 성분 제제", ing:["로페라마이드염산염"], sev:"none", note:"타목시펜과의 유의미한 상호작용이 보고되지 않은 편.", src:"Drugs.com 상호작용 DB"}
+  ]},
+  {cat:"파스 · 외용 진통소염제", items:[
+    {name:"케토톱", alias:"한독", ing:["케토프로펜"], sev:"none", note:"국소 부착형으로 전신 흡수가 적어 유의한 상호작용 보고 없음. 광범위 부위 장기 부착 시 흡수 증가 가능성은 있음.", src:"Drugs.com / 제형 특성"},
+    {name:"케펜택 · 트라스트 · 푸로탑 · 케노펜 · 케토크린", alias:"케토프로펜 계열 동일 성분 제품군", ing:["케토프로펜"], sev:"none", note:"위와 동일한 사유로 상호작용 보고 없음.", src:"제품 라벨 일반 정보"},
+    {name:"볼타렌", alias:"GSK · 디클로페낙 성분 파스", ing:["디클로페낙"], sev:"none", note:"보고된 전신 상호작용 없음.", src:"제품 라벨 일반 정보"},
+    {name:"신신파스아렉스 · 신신아렉스", alias:"신신제약 · 온열/자극성 파스", ing:["살리실산메틸","멘톨","캅사이신"], sev:"none", note:"비NSAID 자극성 성분으로 전신 작용 미미.", src:"제품 라벨 일반 정보"}
+  ]},
+  {cat:"수면유도제", items:[
+    {name:"이지퀼나잇액", alias:"동아제약 · 디펜히드라민 단일 액상", ing:["디펜히드라민염산염"], sev:"contra", note:"CYP2D6 중등도 억제제로 타목시펜 활성대사체(엔독시펜) 생성을 저해해 약효를 낮출 수 있어 병용 회피가 권고됨.", src:"동아제약 제품정보 / Pharmacy Times / HelloPharmacist"},
+    {name:"디펜히드라민염산염 단일정 (일반 수면유도제 전반)", alias:"성분명 기준 - 구매 시 성분표 확인 필요", ing:["디펜히드라민염산염"], sev:"contra", note:"위와 동일한 사유로 병용 회피 권고.", src:"Pharmacy Times / HelloPharmacist"},
+    {name:"아론", alias:"알리코제약 · 독시라민 성분 수면유도제", ing:["독시라민숙신산염"], sev:"minor", note:"대규모 FDA 데이터 기반 분석에선 뚜렷한 상호작용 신호가 확인되지 않았으나, 항히스타민류 특성상 이론적 주의는 필요.", src:"히트뉴스 업계 기사 / eHealthMe(FDA 데이터 기반)"},
+    {name:"자미슬", alias:"태극제약 · 독시라민 성분 수면유도제", ing:["독시라민숙신산염"], sev:"minor", note:"위와 동일.", src:"히트뉴스 업계 기사 / eHealthMe"},
+    {name:"잠피아", alias:"조아제약 · 독시라민 성분 수면유도제", ing:["독시라민숙신산염"], sev:"minor", note:"위와 동일.", src:"히트뉴스 업계 기사 / eHealthMe"},
+    {name:"멜라토닌 보충제", alias:"건강기능식품 형태 수면 보조제", ing:["멜라토닌"], sev:"none", note:"직접적인 타목시펜 상호작용 보고 확인되지 않음.", src:"Drugs.com 상호작용 DB"}
+  ]},
+  {cat:"혈액응고 관련 약 (참고용 · 대부분 전문의약품)", items:[
+    {name:"와파린 (쿠마딘 등)", alias:"전문의약품 · 항응고제", ing:["와파린"], sev:"contra", note:"타목시펜이 와파린의 항응고 효과를 증강시켜 INR이 급상승, 심각한 출혈까지 보고된 대표적 금기 조합. 부득이하게 병용 시 INR 집중 모니터링 필수.", src:"Drugs.com(CONTRAINDICATED) / BMJ 1987 Lodwick et al. / PubMed 증례보고"},
+    {name:"저용량 아스피린 (항혈소판 목적)", alias:"아스피린프로텍트 등", ing:["아스피린"], sev:"caution", note:"항혈소판 작용으로 출혈 경향 상승 가능.", src:"Drugs.com 상호작용 리포트"},
+    {name:"DOAC 계열 (자렐토 · 엘리퀴스 등)", alias:"전문의약품 · 리바록사반/아픽사반 등", ing:["리바록사반 등"], sev:"caution", note:"직접적 상호작용 데이터는 제한적이나, 항응고 효과가 있는 약물 전반에 대해 출혈 위험 주의가 권고됨.", src:"임상 참고자료 종합"}
+  ]},
+  {cat:"비타민 · 건강기능식품", items:[
+    {name:"오메가3 (피쉬오일) 제품 전반", alias:"EPA·DHA 보충제", ing:["EPA","DHA"], sev:"minor", note:"타목시펜 및 와파린과의 유의한 상호작용은 보고되지 않았으나, 고용량 섭취 시 간효소(ALT/AST) 상승이 관찰된 사례가 있어 간기능 모니터링 권고.", src:"Drugs.com / 와파린-피쉬오일 코호트 연구(PMC)"},
+    {name:"비타민 E 단일 보충제", alias:"건강기능식품", ing:["비타민 E"], sev:"none", note:"보고된 상호작용 없음.", src:"Drugs.com"},
+    {name:"비타민 D 단일 보충제", alias:"건강기능식품", ing:["비타민 D"], sev:"none", note:"보고된 상호작용 없음.", src:"Drugs.com"},
+    {name:"비타민 K 단일 보충제", alias:"건강기능식품", ing:["비타민 K"], sev:"caution", note:"타목시펜 자체와는 무관하나, 와파린 등 항응고제 병용자는 비타민K 섭취량 변화가 INR에 영향을 줄 수 있어 주의.", src:"항응고제 약물-영양소 상호작용 일반 원칙"},
+    {name:"대두 이소플라본 보충제 (제니스틴 등)", alias:"콩 관련 건강기능식품", ing:["제니스틴 등 이소플라본"], sev:"caution", note:"시험관·동물 연구에서 고농도 제니스틴이 타목시펜의 항에스트로겐 효과를 상쇄할 가능성 제시. 실제 섭취 농도에서의 임상적 의미는 불확실.", src:"Drugs.com 상호작용 리포트"},
+    {name:"녹차 추출물 (EGCG) 고농도 보충제", alias:"건강기능식품", ing:["EGCG"], sev:"minor", note:"혈중 엔독시펜 정상상태 농도에 영향을 줄 수 있다는 연구가 있어 참고가 필요하나 결론은 확정적이지 않음.", src:"Braal et al. 2020, Breast Cancer Res Treat"}
+  ]}
+];
+
+const sevLabel = {contra:"금기·심각", caution:"주의 필요", minor:"경미·참고", none:"보고없음"};
+
+let activeSev = null;
+let activeCat = null;
+let query = "";
+
+function render(){
+  const main = document.getElementById('main');
+  main.innerHTML = "";
+  let totalShown = 0;
+
+  DATA.forEach((group, gi) => {
+    if(activeCat && activeCat !== group.cat) return;
+
+    const filteredItems = group.items.filter(it => {
+      const sevOk = !activeSev || it.sev === activeSev;
+      const q = query.trim().toLowerCase();
+      const ingText = (it.ing || []).join(' ').toLowerCase();
+      const qOk = !q || (it.name.toLowerCase().includes(q) || it.alias.toLowerCase().includes(q) || it.note.toLowerCase().includes(q) || ingText.includes(q));
+      return sevOk && qOk;
+    });
+
+    if(filteredItems.length === 0) return;
+    totalShown += filteredItems.length;
+
+    const section = document.createElement('section');
+    section.className = 'category';
+    section.innerHTML = `
+      <div class="cat-head">
+        <span class="cat-num">${String(gi+1).padStart(2,'0')}</span>
+        <h2>${group.cat}</h2>
+      </div>
+      <div class="grid"></div>
+    `;
+    const grid = section.querySelector('.grid');
+    filteredItems.forEach(it => {
+      const card = document.createElement('div');
+      card.className = `card ${it.sev}`;
+      const ingHtml = (it.ing || []).map(i => `<span class="ing-chip">${i}</span>`).join('');
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-name">${it.name}<span class="card-alias">${it.alias}</span></div>
+          <span class="badge ${it.sev}">${sevLabel[it.sev]}</span>
+        </div>
+        <div class="ing-row">${ingHtml}</div>
+        <div class="card-body">${it.note}</div>
+        <div class="card-source">출처 · ${it.src}</div>
+      `;
+      grid.appendChild(card);
+    });
+    main.appendChild(section);
+  });
+
+  if(totalShown === 0){
+    main.innerHTML = `<div class="empty-msg">조건에 맞는 항목이 없습니다. 검색어나 필터를 조정해보세요.</div>`;
+  }
+}
+
+function buildCatNav(){
+  const nav = document.getElementById('catNav');
+  const allBtn = document.createElement('button');
+  allBtn.textContent = "전체 보기";
+  allBtn.className = "active";
+  allBtn.onclick = () => { activeCat = null; setActiveNav(allBtn); render(); };
+  nav.appendChild(allBtn);
+
+  DATA.forEach(group => {
+    const btn = document.createElement('button');
+    btn.textContent = group.cat;
+    btn.onclick = () => { activeCat = group.cat; setActiveNav(btn); render(); };
+    nav.appendChild(btn);
+  });
+}
+function setActiveNav(activeBtn){
+  document.querySelectorAll('#catNav button').forEach(b => b.classList.remove('active'));
+  activeBtn.classList.add('active');
+}
+
+document.querySelectorAll('.chip[data-sev]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const sev = chip.getAttribute('data-sev');
+    if(activeSev === sev){
+      activeSev = null;
+      chip.classList.remove('active');
+    } else {
+      document.querySelectorAll('.chip[data-sev]').forEach(c => c.classList.remove('active'));
+      activeSev = sev;
+      chip.classList.add('active');
+    }
+    render();
+  });
+});
+document.getElementById('resetChip').addEventListener('click', () => {
+  activeSev = null;
+  query = "";
+  document.getElementById('searchInput').value = "";
+  document.querySelectorAll('.chip[data-sev]').forEach(c => c.classList.remove('active'));
+  render();
+});
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  query = e.target.value;
+  render();
+});
+
+buildCatNav();
+render();
+</script>
+</body>
+</html>
